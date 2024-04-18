@@ -2,7 +2,13 @@ from fastapi import FastAPI
 
 from server.routes import router as base_router
 from server.users.routes import router as user_router
+from models.base import Base
+from models.product import Product
+from models.db_helper import DataBaseHelper
+from models.db_helper import db
 
+
+from contextlib import asynccontextmanager
 
 import uvicorn
 import asyncio
@@ -17,6 +23,12 @@ app.include_router(user_router)
 app.include_router(base_router)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with db.engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+
+    yield
 
 def run_server():
     uvicorn.run(f'main:app', host="0.0.0.0", port=8000,
