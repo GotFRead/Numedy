@@ -1,0 +1,129 @@
+html {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+#messages {
+    display: grid;
+    grid-column: 3;
+}
+.message {
+    background-color: none;
+    backdrop-filter: blur(10px);
+    margin: 0.25%;
+    padding: 1.25%;
+    margin-inline: 5.25%;
+    text-align: left;
+    position: relative;
+    border-radius: 15px;
+    border-radius: 20px;
+}
+
+.message::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: aliceblue;
+    opacity: 0.5;
+    z-index: -5;
+    top: 0;
+    left: 0;
+    border-radius: 20px;
+}
+
+#messageText {
+    margin-bottom: 20px;
+    border-radius: 15px;
+}
+body {
+    background-image: url("/img/logo.png");
+    background-repeat: no-repeat;
+    background-position:center;
+    background-attachment:fixed;
+    background-size: 15%;
+    margin: 0px;
+    color: #000;
+    font-family: helvetica, times;
+    font-size: 16px;
+}
+dialog {
+    z-index: 10;
+    border-radius: 20px;
+    border-style:hidden;
+    outline: 0 none;
+    position: fixed !important;
+    top: 10% !important;
+    backdrop-filter: blur(20px);
+    position: relative;
+    background-color: aliceblue;
+}
+
+.mok_container {
+}
+
+/* dialog::before {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    content: "";
+    position: absolute;
+    background-color: aliceblue;
+    z-index: -1;
+    opacity: 0.5;
+}  */
+
+.close_button{
+    content: "X";
+    font-weight: 500;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 7;
+}
+
+.selector_item {
+    background-color: aliceblue;
+    border: 0;
+    height: 30px;
+    transition: 0.25s;
+}
+.selector_item:hover {
+    background-color: rgb(167, 213, 253);
+    padding: 2%;
+    margin: 0 2%;
+}
+
+.selector_item:active {
+    background-color: rgb(167, 213, 253);
+    margin: 0 5%;
+}
+
+.selector_container {
+    max-height: 150px;
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+    overflow: -moz-scrollbars-none;
+    scrollbar-width: 0;
+}
+
+#cancel_button,
+#accept_button {
+    border: 0;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: aliceblue;
+    transition: 0.5s;
+    cursor: pointer;
+}
+#cancel_button:hover,
+#accept_button:hover {
+    background-color: rgb(167, 213, 253);
+    padding: 2%;
+    margin: 0 2%;
+}
+
+
+.selector_container::-webkit-scrollbar{
+    width: 0;
+}
