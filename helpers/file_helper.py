@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 
 import os
 
-OBJECT_PATH = os.path.join(os.environ.get('cwd', './src'), 'server_src', 'static')
+OBJECT_PATH = os.path.join(os.environ.get('cwd', './'), 'static')
 
 
 def get_static_file(direction: str = '', filename: str = ''):

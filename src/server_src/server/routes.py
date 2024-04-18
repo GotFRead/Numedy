@@ -5,22 +5,13 @@ import server.prepare as prepare
 
 # __fastapi_depend__
 
-from fastapi import WebSocket
-from fastapi import WebSocketDisconnect
 from fastapi import APIRouter
 from fastapi import Request
 
 from helpers.file_helper import get_static_file
-
-import traceback
-import asyncio
-import json
-
 # __router__
 
-router = APIRouter()
-
-loop = asyncio.get_event_loop()
+router = APIRouter(tags=["base"])
 
 # __static__handler__
 
@@ -41,4 +32,4 @@ async def get_static(item: str):
 
 @router.get("/")
 async def get(request: Request):
-    return get_static_file(filename='index.html')
+    return get_static_file('pages', 'index.html')

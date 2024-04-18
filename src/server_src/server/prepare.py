@@ -4,4 +4,4 @@
 import sys
 import os
 
-sys.path.append(f"{os.getenv('cwd', '/srv/synapse')}".replace('/', os.sep))
+sys.path.append(f"{os.getenv('cwd', './')}".replace('/', os.sep))
