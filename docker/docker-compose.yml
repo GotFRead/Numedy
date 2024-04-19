@@ -11,4 +11,11 @@ services:
       POSTGRES_DB: numedy_test_task
     volumes:
       - ./pgdata:/var/lib/postgresql
-      
+  
+  mosquitto:
+    image: eclipse-mosquitto:1.5.6
+    restart: always
+    ports:
+      - "1883:1883"
+    logging:
+      driver: none
