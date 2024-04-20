@@ -4,4 +4,11 @@
 import sys
 import os
 
-sys.path.append(f"{os.getenv('cwd', '/srv/synapse')}".replace('/', os.sep))
+def get_root_path():
+    path = __file__.split('\\')[0] + "\\"
+    path += '\\'.join([x for x in __file__.split('\\')[1: -3]])
+    return path.replace('/', os.sep)
+
+sys.path.append(get_root_path())
+
+
