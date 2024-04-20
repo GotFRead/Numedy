@@ -1,5 +1,7 @@
 
-from src.server_src.models.product import Product
+import server.warehouse.prepare
+
+from models.product import Product
 
 from .schemas import ProductCreate
 from .schemas import ProductUpdate
@@ -10,29 +12,29 @@ from sqlalchemy.engine import Result
 from sqlalchemy import select
 
 
-def create_product(getted_product: Product):
-    user = getted_product.model_dump()
+def create_product(received_product: Product):
+    user = received_product.model_dump()
     return {
         "success": True,
         "user": user
     }
 
 
-def patch_product(getted_product: Product):
-    product = getted_product.model_dump()
+def patch_product(received_product: Product):
+    product = received_product.model_dump()
     return {
         "success": True,
         "product": product
     }
 
 
-def get_product(getted_product: Product):
+def get_product(received_product: Product):
     return {
         "success": True
     }
 
 
-def delete_product(getted_product: Product):
+def delete_product(received_product: Product):
     return {
         "success": True
     }

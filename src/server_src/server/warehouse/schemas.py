@@ -24,3 +24,13 @@ class Product(ProductBase):
 class ProductUpdatePartial(ProductCreate):
     name: str | None = None
     weight: int | None = None
+
+
+class Response(BaseModel):
+    pass
+
+class AddProductResponse(BaseModel):
+    id: int
+    storage: int
+    name: str
+    weight: int

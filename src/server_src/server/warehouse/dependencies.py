@@ -6,8 +6,8 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
 
-from src.server_src.models import db_helper
-from src.server_src.models import Product
+from src.models import db_helper
+from src.models import Product
 
 from . import actions
 
@@ -19,7 +19,6 @@ async def get_product_via_id(
             session=session,
             product_id=product_id
         )
-
 
     if product is None:
         raise HTTPException(
