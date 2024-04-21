@@ -6,6 +6,7 @@ from pydantic import ConfigDict
 class ProductBase(BaseModel):
     name: str
     weight: int
+    storage: int
 
 class ProductStorageBase(BaseModel):
     address: str
@@ -41,6 +42,7 @@ class ProductUpdatePartial(ProductCreate):
     name: str | None = None
     weight: int | None = None
     curr_weight: int | None = None
+    storage: int | None = -1
 
 
 class ProductRemove(ProductCreate):

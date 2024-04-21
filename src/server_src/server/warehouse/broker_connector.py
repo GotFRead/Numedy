@@ -26,6 +26,7 @@ class BrokerConnector:
                         client_id: str,
                         product_name: str,
                         weight: int,
+                        storage: int,
                         id_: int):
         self.connector.send_message(
             client_id,
@@ -33,7 +34,8 @@ class BrokerConnector:
             RequestBuilder.patch_product(
                 id_=id_,
                 name=product_name,
-                weight=weight
+                weight=weight,
+                storage=storage,
             ),
             type_message=TypeMessage.SET
         )
@@ -52,6 +54,7 @@ class BrokerConnector:
                           client_id: str,
                           product_name: str,
                           weight: int,
+                          storage: int,
                           id_: int):
 
         self.connector.send_message(
@@ -60,7 +63,8 @@ class BrokerConnector:
             RequestBuilder.add_product(
                 id_=id_,
                 name=product_name,
-                weight=weight
+                weight=weight,
+                storage=storage
             ),
             type_message=TypeMessage.SET
         )

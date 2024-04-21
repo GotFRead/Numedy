@@ -5,24 +5,26 @@ from interfaces.base_interface import get_status
 
 class RequestBuilder:
     @staticmethod
-    def add_product(id_: int, name: str, weight: int):
+    def add_product(id_: int, name: str, weight: int, storage: int):
         return {
             'command': Commands.ADD_PRODUCT.value,
             'product_info': {
                 'id': id_,
                 'name': name,
                 'weight': weight,
+                'storage': storage
             }
         }
 
     @staticmethod
-    def patch_product(id_: int, name: str, weight: int):
+    def patch_product(id_: int, name: str, weight: int, storage: int):
         return {
             'command': Commands.PATCH_PRODUCT.value,
             'product_info': {
                 'id': id_,
                 'name': name,
                 'weight': weight,
+                'storage': storage
             }
         }
 

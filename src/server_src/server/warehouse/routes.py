@@ -45,10 +45,11 @@ async def create_product(
     product_json = json.loads(product_in.json())
 
     response = await broker_connector.add_product(
-        client_id, 
-        product_json['name'],
-        product_json['weight'],
-        product_json['id'],
+        client_id=client_id, 
+        product_name=product_json['name'],
+        weight=product_json['weight'],
+        storage=product_json['storage'],
+        id_=product_json['id'],
     )
     result = response['product_info']
     result['status'] = response['status']
@@ -82,6 +83,7 @@ async def update_product_partial(
         product_name=product_json['name'],
         weight=product_json['weight'],
         id_=product_json['id'],
+        storage=product_json['storage']
     )    
 
     result = response['product_info']

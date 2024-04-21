@@ -16,10 +16,11 @@ from interfaces.warehouse.message_builder import ResponseBuilder as WRResponse
 from interfaces.base_interface import StatusComplete
 
 from src.models.db_helper import db_helper
-from src.models.product import Product 
-from src.models.storage import Storage 
+from src.models.product import Product
+from src.models.storage import Storage
 
 import traceback
+
 
 class Service(BaseService):
     def __init__(self) -> None:
@@ -29,6 +30,49 @@ class Service(BaseService):
 
     # __product__
 
+    async def replace_product_in_storage(self, session, product: Product):
+        storage: Storage = await get_storage_via_id(
+                            session=session,
+                            id_=product.storage
+                        )
+
+        if storage.curr_weight + product.weight > storage.max_weight:
+            raise Exception(
+                'Mass over storage.max_weight < storage.curr_weight + product.weight')
+
+        await self.patch_storage__(
+            session=session,
+            curr_storage=storage,
+            patch_info={
+                'id': storage.id,
+                'address': storage.address,
+                'max_weight': storage.max_weight,
+                'curr_weight': storage.curr_weight + product.weight,
+            }
+        )
+
+
+    async def replace_product_from_storage(self, session, product: Product):
+        storage: Storage = await get_storage_via_id(
+                            session=session,
+                            id_=product.storage
+                        )
+
+        if storage.curr_weight - product.weight < 0:
+            raise Exception(
+                'What wrong storage.curr_weight - product.weight < 0, check your request')
+
+        await self.patch_storage__(
+            session=session,
+            curr_storage=storage,
+            patch_info={
+                'id': storage.id,
+                'address': storage.address,
+                'max_weight': storage.max_weight,
+                'curr_weight': storage.curr_weight - product.weight,
+            }
+        )
+
     async def add_product(self, request: dict):
         error = ""
         status = StatusComplete.SUCCESS.value
@@ -36,13 +80,18 @@ class Service(BaseService):
         try:
             session = self.db_connector.get_scoped_session()
             product = Product(**request['message']['product_info'])
+
+            await self.replace_product_in_storage(session, product)
+
             session.add(product)
             await session.commit()
+            
             # await session.refresh() # ? Needed
 
             result['id'] = product.id
             result['name'] = product.name
             result['weight'] = product.weight
+            result['storage'] = product.storage
 
         except Exception as err:
             msg = traceback.format_exc()
@@ -52,20 +101,21 @@ class Service(BaseService):
             result['id'] = request['message']['product_info']['id']
             result['name'] = request['message']['product_info']['name']
             result['weight'] = request['message']['product_info']['weight']
-            
+            result['storage'] = request['message']['product_info']['storage']
+
         return WRResponse.add_product(
             result['id'],
             result['name'],
             result['weight'],
-            1, # TODO Доделать запрос с storage
+            result['storage'],
             status,
             error,
         )
 
-
     async def remove_product(self, request: dict):
         error = ""
         status = StatusComplete.SUCCESS.value
+        result = dict()
         try:
             session = self.db_connector.get_scoped_session()
             product = await get_product_via_id(
@@ -73,8 +123,14 @@ class Service(BaseService):
                 product_id=request['message']['product_info']['id']
             )
 
+            await self.replace_product_from_storage(session, product)
             await session.delete(product)
             await session.commit()
+
+            result['id'] = product.id
+            result['name'] = product.name
+            result['weight'] = product.weight
+            result['storage'] = product.storage
 
             # await session.refresh() # ? Needed
         except Exception as err:
@@ -82,15 +138,19 @@ class Service(BaseService):
             self.logger.error(f'add_product raise error - {msg}')
             status = StatusComplete.ERROR.value
             error = msg
-            
+            result['id'] = request['message']['product_info']['id']
+            result['name'] = request['message']['product_info']['name']
+            result['weight'] = request['message']['product_info']['weight']
+            result['storage'] = request['message']['product_info']['storage']
+
         return WRResponse.remove_product(
-            product.id,
-            product.name,
-            product.weight,
-            1, # TODO Доделать запрос с storage
+            result['id'],
+            result['name'],
+            result['weight'],
+            result['storage'],
             status,
             error,
-        )  
+        )
 
     async def patch_product(self, request: dict):
         error = ""
@@ -102,12 +162,16 @@ class Service(BaseService):
                 session=session,
                 product_id=request['message']['product_info']['id']
             )
-            
-            await update_product_partial(
+
+            await self.replace_product_from_storage(session, product)
+
+            product: Product = await update_product_partial(
                 session=session,
                 product=product,
                 product_update=request['message']['product_info']
             )
+
+            await self.replace_product_in_storage(session, product)
 
             await session.commit()
 
@@ -124,16 +188,16 @@ class Service(BaseService):
             result['name'] = request['message']['product_info']['name']
             result['weight'] = request['message']['product_info']['weight']
             error = msg
-            
+
         return WRResponse.patch_product(
             result['id'],
             result['name'],
             result['weight'],
-            1, # TODO Доделать запрос с storage
+            1,  # TODO Доделать запрос с storage
             status,
             error,
-        )  
-    
+        )
+
     # __storage__
 
     async def add_storage(self, request: dict):
@@ -142,12 +206,11 @@ class Service(BaseService):
         result = dict()
         try:
             session = self.db_connector.get_scoped_session()
-            request['message']['storage_info']['curr_weight'] = request['message']['storage_info']['max_weight']
+            request['message']['storage_info']['curr_weight'] = 0
             storage: Storage = Storage(**request['message']['storage_info'])
             session.add(storage)
             await session.commit()
             # await session.refresh() # ? Needed
-
 
             result['id'] = storage.id
             result['address'] = storage.address
@@ -164,8 +227,7 @@ class Service(BaseService):
             result['address'] = request['message']['storage_info']['address']
             result['weight'] = request['message']['storage_info']['max_weight']
             result['curr_weight'] = request['message']['storage_info']['curr_weight']
-            
-            
+
         return WRResponse.add_storage(
             result['id'],
             result['address'],
@@ -174,7 +236,6 @@ class Service(BaseService):
             status,
             error,
         )
-
 
     async def remove_storage(self, request: dict):
         error = ""
@@ -192,9 +253,8 @@ class Service(BaseService):
 
             # await session.refresh() # ? Needed
 
-            
             result['id'] = storage.id
-            result['name'] = storage.name
+            result['address'] = storage.address
             result['weight'] = storage.weight
 
         except Exception as err:
@@ -203,17 +263,29 @@ class Service(BaseService):
             status = StatusComplete.ERROR.value
             error = msg
             result['id'] = request['message']['storage_info']['id']
-            result['name'] = request['message']['storage_info']['name']
+            result['address'] = request['message']['storage_info']['address']
             result['weight'] = request['message']['storage_info']['weight']
-            
+
         return WRResponse.remove_storage(
             result['id'],
-            result['name'],
-            result['weight'], 
+            result['address'],
+            result['weight'],
             result['weight'],
             status,
             error,
-        )  
+        )
+    
+    async def patch_storage__(self, session, curr_storage: Storage, patch_info: dict):
+        if patch_info['max_weight'] < patch_info['curr_weight']:
+            raise Exception('Max weight < storage.curr_weight')
+
+        await update_product_partial(
+            session=session,
+            product=curr_storage,
+            product_update=patch_info
+        )
+
+        await session.commit()
 
     async def patch_storage(self, request: dict):
         error = ""
@@ -226,16 +298,11 @@ class Service(BaseService):
                 id_=request['message']['storage_info']['id']
             )
 
-            if request['message']['storage_info']['max_weight'] < request['message']['storage_info']['curr_weight']:
-                raise Exception('Max weight < storage.curr_weight')
-            
-            await update_product_partial(
-                session=session,
-                product=storage,
-                product_update=request['message']['storage_info']
+            await self.patch_storage__(
+                session,
+                storage,
+                request['message']['storage_info']
             )
-
-            await session.commit()
 
             result['id'] = storage.id
             result['address'] = storage.address
@@ -252,7 +319,7 @@ class Service(BaseService):
             result['max_weight'] = request['message']['storage_info']['max_weight']
             result['curr_weight'] = request['message']['storage_info']['curr_weight']
             error = msg
-            
+
         return WRResponse.patch_storage(
             result['id'],
             result['address'],
@@ -260,17 +327,14 @@ class Service(BaseService):
             result['curr_weight'],
             status,
             error,
-        )  
-
-
-
+        )
 
     def select_needed_handlers(self, request: dict):
         try:
             self.logger.info(f'Accept message - {request}')
             type_message = request['type_message']
             command = request['message']['command']
-            
+
             return {
                 (TypeMessage.SET.value, WRCommands.ADD_PRODUCT.value): self.add_product,
                 (TypeMessage.SET.value, WRCommands.REMOVE_PRODUCT.value): self.remove_product,
@@ -281,15 +345,16 @@ class Service(BaseService):
             }[type_message, command]
 
         except Exception as err:
-            self.logger.info(f'Select executor raise exception - {err}, corr was stopped!')
+            self.logger.info(
+                f'Select executor raise exception - {err}, corr was stopped!')
             raise err
-        
-    def send_message(self, client_id: str, data: dict, type_message = TypeMessage.RES, receiver = Client.WEB_SERVER_WAREHOUSE_SEGMENT.value):
+
+    def send_message(self, client_id: str, data: dict, type_message=TypeMessage.RES, receiver=Client.WEB_SERVER_WAREHOUSE_SEGMENT.value):
         self.broker_sender.send(
             initiator=client_id,
             sender=self.name,
             receiver=receiver,
             type_message=type_message.value,
-            data=data, 
+            data=data,
             topic=receiver
         )
