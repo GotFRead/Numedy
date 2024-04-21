@@ -2,6 +2,7 @@
 import server.warehouse.prepare
 
 from models.product import Product
+from models.storage import Storage
 
 from .schemas import ProductCreate
 from .schemas import ProductUpdate
@@ -99,3 +100,11 @@ async def delete_product(
 ) -> None:
     await session.delete(product)
     await session.commit()
+
+
+# __storage__
+async def get_storage(session: AsyncSession) -> list[Storage] | list:
+    request = select(Storage).order_by(Storage.id)
+    result: Result = await session.execute(request)
+    storages = result.scalars().all()  # (id, prod)
+    return storages

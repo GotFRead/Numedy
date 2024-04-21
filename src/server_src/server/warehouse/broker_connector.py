@@ -97,3 +97,82 @@ class BrokerConnector:
             result = err
 
         return result
+
+    async def patch_storage(self,
+                        client_id: str,
+                        product_name: str,
+                        weight: int,
+                        curr_weight: int,
+                        id_: int):
+        self.connector.send_message(
+            client_id,
+            Client.CALC.value,
+            RequestBuilder.patch_storage(
+                id_=id_,
+                address=product_name,
+                weight=weight,
+                curr_weight=curr_weight,
+            ),
+            type_message=TypeMessage.SET
+        )
+
+        try:
+            result = await self.get_response(
+                client_id,
+                Commands.PATCH_STORAGE.value
+            )
+        except Exception as err:
+            result = err
+
+        return result
+
+    async def add_storage(self,
+                          client_id: str,
+                          storage_name: str,
+                          max_weight: int,
+                          id_: int):
+
+        self.connector.send_message(
+            client_id,
+            Client.CALC.value,
+            RequestBuilder.add_storage(
+                id_=id_,
+                address=storage_name,
+                weight=max_weight
+            ),
+            type_message=TypeMessage.SET
+        )
+
+        try:
+            result = await self.get_response(
+                client_id,
+                Commands.ADD_STORAGE.value
+            )
+        except Exception as err:
+            result = err
+
+        return result
+
+    async def delete_storage(self,
+                          client_id: str,
+                          storage_id: int):
+
+        self.connector.send_message(
+            client_id,
+            Client.CALC.value,
+            RequestBuilder.remove_storage(
+                id_=storage_id,
+            ),
+            type_message=TypeMessage.SET
+        )
+
+        try:
+            result = await self.get_response(
+                client_id,
+                Commands.REMOVE_STORAGE.value
+            )
+        except Exception as err:
+            result = err
+
+        return result
+

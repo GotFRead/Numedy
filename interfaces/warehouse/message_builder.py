@@ -36,32 +36,33 @@ class RequestBuilder:
         }
 
     @staticmethod
-    def storage_product(id_: int, name: str, weight: int):
+    def add_storage(id_: int, address: str, weight: int):
         return {
             'command': Commands.ADD_STORAGE.value,
-            'product_info': {
+            'storage_info': {
                 'id': id_,
-                'name': name,
-                'weight': weight,
+                'address': address,
+                'max_weight': weight,
             }
         }
 
     @staticmethod
-    def patch_storage(id_: int, name: str, weight: int):
+    def patch_storage(id_: int, address: str, weight: int, curr_weight: int):
         return {
             'command': Commands.PATCH_STORAGE.value,
-            'product_info': {
+            'storage_info': {
                 'id': id_,
-                'name': name,
-                'weight': weight,
+                'address': address,
+                'max_weight': weight,
+                'curr_weight': curr_weight,
             }
         }
 
     @staticmethod
-    def remove_product(id_: int):
+    def remove_storage(id_: int):
         return {
-            'command': Commands.REMOVE_PRODUCT.value,
-            'product_info': {
+            'command': Commands.REMOVE_STORAGE.value,
+            'storage_info': {
                 'id': id_,
             }
         }
@@ -104,5 +105,46 @@ class ResponseBuilder:
                 'name': name,
                 'weight': weight,
                 'storage': storage
+            }
+        }
+    
+
+    @staticmethod
+    def add_storage(id: int, address: str, weight: int, curr_weight: int, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'command': Commands.ADD_STORAGE.value,
+            'status': get_status(status, error_message),
+            'storage_info': {
+                'id': id,
+                'address': address,
+                'max_weight': weight,
+                'curr_weight': curr_weight,
+            }
+        }
+    
+    @staticmethod
+    def remove_storage(id: int, address: str, weight: int, curr_weight: int, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'command': Commands.REMOVE_STORAGE.value,
+            'status': get_status(status, error_message),
+            'storage_info': {
+                'id': id,
+                'address': address,
+                'max_weight': weight,
+                'curr_weight': curr_weight,
+            }
+        }
+    
+
+    @staticmethod
+    def patch_storage(id: int, address: str, weight: int, curr_weight: int, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'command': Commands.PATCH_STORAGE.value,
+            'status': get_status(status, error_message),
+            'storage_info': {
+                'id': id,
+                'address': address,
+                'max_weight': weight,
+                'curr_weight': curr_weight,
             }
         }

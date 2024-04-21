@@ -13,7 +13,9 @@ class StatusComplete(str, Enum):
 
 
 def get_status(status: StatusComplete, error_message = '') -> str | dict:
-    return status if status == StatusComplete.SUCCESS else {
-        'status': status,
-        'error_message': error_message
-    }
+    return status
+    # TODO Переделать отправку статусов
+    # return status if status == StatusComplete.SUCCESS else {
+    #     'status': status,
+    #     'error_message': error_message
+    # }

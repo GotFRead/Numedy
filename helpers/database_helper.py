@@ -6,7 +6,9 @@ from fastapi import status
 
 from src.models import db_helper
 from src.models import Product
+from src.models import Storage
 from src.server_src.server.warehouse.schemas import ProductUpdate
+from src.server_src.server.warehouse.schemas import StorageUpdate
 
 async def get_product_via_id(
     product_id: int,
@@ -39,3 +41,37 @@ async def update_product_partial(
     
     await session.commit()
     return product
+
+
+
+async def get_storage_via_id(
+    id_: int,
+    session: AsyncSession
+) -> Storage:
+    storage = await get_storage(
+            session=session,
+            product_id=id_
+        )
+
+    if storage is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Storage id - {id_} - NOT FOUND"
+        )
+    
+    return storage
+
+async def get_storage(session: AsyncSession, product_id: int):
+    return await session.get(Storage, product_id)
+
+
+async def update_storage_partial(
+        session: AsyncSession,
+        storage: Storage,
+        product_update: StorageUpdate) -> Storage: 
+    
+    for name, value in product_update.items():
+        setattr(storage, name, value)
+    
+    await session.commit()
+    return storage
