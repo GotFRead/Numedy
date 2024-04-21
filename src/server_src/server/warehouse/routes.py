@@ -74,28 +74,38 @@ async def update_product(
 
 @router.patch('/{product_id}/')
 async def update_product_partial(
-    product_in: schemas.ProductUpdatePartial,
-    product_: Product = Depends(dependencies.get_product_via_id),
-    session: AsyncSession = Depends(db_helper.session_dependency),
+    request: Request,
+    product_: schemas.ProductUpdatePartial,
 ):
-    
-    # TODO Получить Статус можно ли изменить продукт
-    return await actions.update_product_partial(
-        session=session,
-        product=product_,
-        product_update=product_in,
-    )
+    client_id = f'{request.client.host}:{request.client.port}'
+    product_json = json.loads(product_.json())
 
-@router.delete('/{product_id}/', status_code=status.HTTP_204_NO_CONTENT)
+    response = await broker_connector.patch_product(
+        client_id=client_id,
+        product_name=product_json['name'],
+        weight=product_json['weight'],
+        id_=product_json['id'],
+    )    
+    
+    result = response['product_info']
+    result['status'] = response['status']
+
+    return result
+
+@router.delete('/{product_id}/', response_model=schemas.DeleteProductResponse)
 async def update_product_partial(
-    product_: Product = Depends(dependencies.get_product_via_id),
-    session: AsyncSession = Depends(db_helper.session_dependency),
+    request: Request,
+    product_: schemas.ProductRemove,
 ) -> None:
     
-    # TODO Получить Статус можно ли изменить продукт
-    
-    await actions.delete_product(
-        session=session,
-        product=product_)
+    client_id = f'{request.client.host}:{request.client.port}'
+    product_json = json.loads(product_.json())
 
-    return None
+    response = await broker_connector.delete_product(
+        client_id, 
+        product_json['id'],
+    )    
+    result = response['product_info']
+    result['status'] = response['status']
+
+    return result

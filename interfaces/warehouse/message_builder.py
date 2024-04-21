@@ -47,7 +47,7 @@ class RequestBuilder:
         }
 
     @staticmethod
-    def patch_product(id_: int, name: str, weight: int):
+    def patch_storage(id_: int, name: str, weight: int):
         return {
             'command': Commands.PATCH_STORAGE.value,
             'product_info': {
@@ -60,7 +60,7 @@ class RequestBuilder:
     @staticmethod
     def remove_product(id_: int):
         return {
-            'command': Commands.REMOVE_STORAGE.value,
+            'command': Commands.REMOVE_PRODUCT.value,
             'product_info': {
                 'id': id_,
             }
@@ -71,6 +71,33 @@ class ResponseBuilder:
     def add_product(id: int, name: str, weight: int, storage: int, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
         return {
             'command': Commands.ADD_PRODUCT.value,
+            'status': get_status(status, error_message),
+            'product_info': {
+                'id': id,
+                'name': name,
+                'weight': weight,
+                'storage': storage
+            }
+        }
+    
+    @staticmethod
+    def remove_product(id: int, name: str, weight: int, storage: int, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'command': Commands.REMOVE_PRODUCT.value,
+            'status': get_status(status, error_message),
+            'product_info': {
+                'id': id,
+                'name': name,
+                'weight': weight,
+                'storage': storage
+            }
+        }
+    
+
+    @staticmethod
+    def patch_product(id: int, name: str, weight: int, storage: int, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'command': Commands.PATCH_PRODUCT.value,
             'status': get_status(status, error_message),
             'product_info': {
                 'id': id,

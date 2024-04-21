@@ -22,9 +22,12 @@ class Product(ProductBase):
 
 
 class ProductUpdatePartial(ProductCreate):
+    id: int
     name: str | None = None
     weight: int | None = None
 
+class ProductRemove(ProductCreate):
+    id: int 
 
 class Response(BaseModel):
     pass
@@ -34,3 +37,18 @@ class AddProductResponse(BaseModel):
     storage: int
     name: str
     weight: int
+
+class DeleteProductResponse(BaseModel):
+    id: int
+    storage: int
+    name: str
+    weight: int
+    status: str
+
+
+class PatchProductResponse(BaseModel):
+    id: int
+    storage: int
+    name: str
+    weight: int
+    status: str
