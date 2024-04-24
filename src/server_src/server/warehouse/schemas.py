@@ -97,3 +97,10 @@ class PatchStorageResponse(BaseModel):
     max_weight: int
     curr_weight: int
     status: str
+
+class SearchResponse(BaseModel):
+    founded_objects: list
+    status: str
+
+class SearchRequest(BaseModel):
+    pattern: str

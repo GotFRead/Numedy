@@ -14,7 +14,7 @@ class BrokerConnector:
         self.name = Client.WEB_SERVER_WAREHOUSE_SEGMENT.value
         self.connector = BusConnector(self.name)
 
-    async def get_response(self, client_token: str, command: Commands, timeout=60):
+    async def get_response(self, client_token: str, command: Commands, timeout=15):
         command = command if isinstance(command, str) else command.value
         return await asyncio.wait_for(self.connector.wait_response(client_token, command), timeout)
 
@@ -49,6 +49,51 @@ class BrokerConnector:
             result = err
 
         return result
+    
+    async def search_product(self,
+                            client_id: str,
+                            pattern: str,):
+        self.connector.send_message(
+            client_id,
+            Client.CALC.value,
+            RequestBuilder.search_product(
+                pattern=pattern
+            ),
+            type_message=TypeMessage.GET
+        )
+
+        try:
+            result = await self.get_response(
+                client_id,
+                Commands.SEARCH_MATCH.value
+            )
+        except Exception as err:
+            result = err
+
+        return result
+
+    async def search_storage(self,
+                            client_id: str,
+                            address_pattern: str,):
+        self.connector.send_message(
+            client_id,
+            Client.CALC.value,
+            RequestBuilder.search_storage(
+                pattern=address_pattern
+            ),
+            type_message=TypeMessage.GET
+        )
+
+        try:
+            result = await self.get_response(
+                client_id,
+                Commands.SEARCH_STORAGE.value
+            )
+        except Exception as err:
+            result = err
+
+        return result
+
 
     async def add_product(self,
                           client_id: str,

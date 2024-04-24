@@ -68,6 +68,24 @@ class RequestBuilder:
                 'id': id_,
             }
         }
+    
+    @staticmethod
+    def search_product(pattern: str):
+        return {
+            'command': Commands.SEARCH_MATCH.value,
+            'product_info': {
+                'pattern': pattern,
+            }
+        }
+
+    @staticmethod
+    def search_storage(pattern: str):
+        return {
+            'command': Commands.SEARCH_STORAGE.value,
+            'product_info': {
+                'pattern': pattern,
+            }
+        }
 
 class ResponseBuilder:
     @staticmethod
@@ -148,5 +166,25 @@ class ResponseBuilder:
                 'address': address,
                 'max_weight': weight,
                 'curr_weight': curr_weight,
+            }
+        }
+    
+    @staticmethod
+    def search_product(founded_objects: list, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'status': get_status(status, error_message),
+            'command': Commands.SEARCH_MATCH.value,
+            'payload': {
+                'founded_objects': founded_objects,
+            }
+        }
+    
+    @staticmethod
+    def search_storage(founded_objects: list, status: StatusComplete = StatusComplete.SUCCESS, error_message: str = ''):
+        return {
+            'status': get_status(status, error_message),
+            'command': Commands.SEARCH_STORAGE.value,
+            'payload': {
+                'founded_objects': founded_objects,
             }
         }

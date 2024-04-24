@@ -10,6 +10,7 @@ from helpers.database_helper import update_product_partial
 from helpers.database_helper import get_storage_via_id
 from helpers.database_helper import get_storage
 from helpers.database_helper import update_product_partial
+from helpers.string_prepare import clean_string
 
 from interfaces.warehouse.interfaces import Commands as WRCommands
 from interfaces.warehouse.message_builder import ResponseBuilder as WRResponse
@@ -18,6 +19,8 @@ from interfaces.base_interface import StatusComplete
 from src.models.db_helper import db_helper
 from src.models.product import Product
 from src.models.storage import Storage
+
+from sqlalchemy import select
 
 import traceback
 
@@ -315,6 +318,100 @@ class Service(BaseService):
             status,
             error,
         )
+    
+    def check_intersection(self, base_string: str, checked_string: str):
+        status = False
+        for x in range(len(base_string)):
+            if checked_string[x] == base_string[x]:
+                continue
+        else: 
+            status = True 
+        return status
+    
+    async def search_match(self, request: dict):
+        error = ""
+
+        pattern = clean_string(request['message']['product_info']['pattern']).lower()
+
+        session = self.db_connector.get_scoped_session()
+
+        status = StatusComplete.SUCCESS.value
+
+        result = dict()
+
+        try:
+            result['matches'] = list()
+
+            request = select(Product)
+
+            response = await session.execute(request)
+
+            response = response.scalars().all()
+
+            for res_obj in response:
+                if pattern in res_obj.name.lower():
+                    result['matches'].append({
+                        'id': res_obj.id,
+                        'name': res_obj.name,
+                        'storage': res_obj.storage,
+                        'weight': res_obj.weight,
+                    })
+
+        except Exception as err:
+            msg = traceback.format_exc()
+            self.logger.error(msg)
+            result['matches'] = list()
+            error = msg
+            status = StatusComplete.ERROR.value
+
+        return WRResponse.search_product(
+            result['matches'],
+            status,
+            error,
+        )
+    
+    async def search_storage(self, request: dict):
+        error = ""
+
+        pattern = clean_string(request['message']['product_info']['pattern']).lower()
+
+        session = self.db_connector.get_scoped_session()
+
+        status = StatusComplete.SUCCESS.value
+
+        result = dict()
+
+        try:
+            result['matches'] = list()
+
+            request = select(Storage)
+
+            response = await session.execute(request)
+
+            response = response.scalars().all()
+
+            for res_obj in response:
+                if pattern in res_obj.address.lower():
+                    result['matches'].append({
+                        'address': res_obj.address,
+                        'max_weight': res_obj.max_weight,
+                        'curr_weight': res_obj.curr_weight,
+                        'id': res_obj.id,
+                    })
+
+        except Exception as err:
+            msg = traceback.format_exc()
+            self.logger.error(msg)
+            result['matches'] = list()
+            error = msg
+            status = StatusComplete.ERROR.value
+
+        return WRResponse.search_storage(
+            result['matches'],
+            status,
+            error,
+        )
+
 
     def select_needed_handlers(self, request: dict):
         try:
@@ -329,6 +426,8 @@ class Service(BaseService):
                 (TypeMessage.SET.value, WRCommands.ADD_STORAGE.value): self.add_storage,
                 (TypeMessage.SET.value, WRCommands.REMOVE_STORAGE.value): self.remove_storage,
                 (TypeMessage.SET.value, WRCommands.PATCH_STORAGE.value): self.patch_storage,
+                (TypeMessage.GET.value, WRCommands.SEARCH_MATCH.value): self.search_match,
+                (TypeMessage.GET.value, WRCommands.SEARCH_STORAGE.value): self.search_storage,
             }[type_message, command]
 
         except Exception as err:
