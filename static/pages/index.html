@@ -1,10 +1,29 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Numedy Corp</title>
+        <title>Int Sys Corp</title>
         <link rel="stylesheet" href="/css/main.css" data-embed>
     </head>
     <body align="center">
-        <script src="/js/websocket_client.js" data-embed="disable"> </script>
+        <div id="InputForm">
+            <h2 id="DeviceSearch">Поиск товаров</h2>
+            <form id="actionForm" onsubmit="on_submit(event)" >
+                <input type="text" id="messageText" autocomplete="off"/>
+            </form>
+
+            <div id='errors' align="center">
+            </div>
+        </div>
+
+        <dialog id="accept">
+            <div class="button_container">
+                <button id="accept_button" onclick="on_accept_button_click(event)" >Принять</button>
+                <button id="cancel_button" onclick="on_cancel_button_click(event)">Отмена</button>
+            </div>
+        </dialog>
+
+        <div id='messages' align="left">
+        </div>
+        <script src="/js/client.js" data-embed="disable" type="module"> </script>
     </body>
 </html>

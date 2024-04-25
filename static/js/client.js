@@ -3,9 +3,8 @@ var uls = document.getElementById("messages");
 document.querySelector("#messageText").addEventListener("input", onInput);
 let errors = document.getElementById("errors");
 const messages_for_errors_code = new Map([
-  [1, "Timeout ERROR check your input"],
-  [2, "Found unsupported symbol"],
-  [3, "Nothing NOT FOUND, check your input"],
+  ["ERROR", "Timeout ERROR check your input"],
+  ["SUCCESS", "Your product was found!"],
 ]);
 
 let timeout;
@@ -13,7 +12,7 @@ let timeout;
 function onInput(event) {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
-    sendMessage(event);
+    get_product_by_name(event);
     uls.textContent = "";
     errors.textContent = "";
   }, 450);
@@ -37,7 +36,7 @@ function on_cancel_button_click(event) {
 function get_dialog_payload(string_) {
   let payload = {};
 
-  let info = string_.split('\n')
+  let info = string_.split("\n");
 
   console.log(info);
 
@@ -46,8 +45,8 @@ function get_dialog_payload(string_) {
     return;
   }
 
-  payload["device_and_port"] = info[1].split('Изменить: ')[1];
-  payload["setting"] = info[3].split('Новые настройки: ')[1];
+  payload["device_and_port"] = info[1].split("Изменить: ")[1];
+  payload["setting"] = info[3].split("Новые настройки: ")[1];
 
   console.log(payload);
 
@@ -55,10 +54,11 @@ function get_dialog_payload(string_) {
 }
 
 async function on_accept_button_click(event) {
+  // TODO Переделать под запросы удаление
   const acceptDialog = document.querySelector("#accept");
   const vlanDialog = document.querySelector("#select_vlans");
-  await fetch(`/vlan_preset_list/${client_id}`, {
-    method: "POST",
+  await fetch(`/product/${client_id}`, {
+    method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(get_dialog_payload(acceptDialog.textContent)),
     timeout: 1000,
@@ -81,35 +81,8 @@ function on_selector_item_click(event) {
   acceptDialog.setAttribute("open", "true");
 }
 
-async function get_vlan_preset_list() {
-  let payload;
-  let vlans = document.querySelector(".selector_container");
-
-  try {
-    let response = await fetch(`/vlan_preset_list/${client_id}`, {
-      timeout: 1000,
-    });
-    payload = JSON.parse(await response.json());
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-
-  if (typeof payload === "undefined") return;
-
-  for (const key in payload) {
-    let selector_item = document.createElement("button");
-    selector_item.className = "selector_item";
-    selector_item.dataset["name"] = payload[key];
-    selector_item.addEventListener("click", (e) => on_selector_item_click(e));
-    selector_item.textContent = payload[key];
-    vlans.appendChild(selector_item);
-  }
-}
-
 function popup(event) {
-  get_vlan_preset_list();
-  const dialog = document.querySelector("#select_vlans");
+  const dialog = document.querySelector("#accept");
   let title = dialog.querySelector("#title");
   let event_content = get_message(event);
   let message_title = event_content.querySelector("h4").textContent;
@@ -127,70 +100,59 @@ function createLiElem(item) {
   let message_container = document.createElement("div");
   message_container.className = "message";
   message_container.onclick = popup;
-  let switch_info = document.createElement("h4");
-  switch_info.textContent = `Switch: ${item.switch} | Port: ${item.port}`;
+  let product_info = document.createElement("h4");
+  product_info.textContent = `Id: ${item.id} | Name: ${item.name}`;
 
   let description = document.createElement("p");
-  description.textContent = `vlan: ${
-    typeof item.vlan == "object" ? JSON.stringify(item.vlan) : item.vlan
-  } | mac: ${item.mac} | description: ${item.description}`;
-  message_container.appendChild(switch_info);
+  description.textContent = `storage: ${item.storage} | weight: ${item.weight}`;
+  message_container.appendChild(product_info);
   message_container.appendChild(description);
   return message_container;
 }
 
-function Connect(address) {
-  ws = new WebSocket(`ws://localhost:8000/session/${client_id}`);
-  ws.onmessage = async function (event) {
-    var messages = document.getElementById("messages");
+async function get_product_by_name(event) {
+  let request = document.getElementById("messageText");
+  let response = await fetch(`/products/search_product/${request.value}`, {
+    timeout: 1000,
+  });
 
-    var message = document.createElement("li");
-    var json_representation = JSON.parse(event.data);
+  await result_product_representation(await response.json());
+}
+
+async function get_all(event) {
+  let response = await fetch(`/products/${client_id}`, {
+    timeout: 1000,
+  });
+  payload = JSON.parse(await response.json());
+
+  await result_product_representation(payload);
+}
+
+async function result_product_representation(payload) {
+  try {
+    var messages = document.getElementById("messages");
+    var json_representation = payload;
 
     if (
       typeof json_representation == "object" &&
-      "err" in json_representation &&
-      messages_for_errors_code.has(json_representation["err"])
+      messages_for_errors_code.has(json_representation.status)
     ) {
       let message_container = document.createElement("p");
       let error_info = document.createElement("h4");
       error_info.textContent = messages_for_errors_code.get(
-        json_representation["err"]
+        json_representation.status
       );
       message_container.appendChild(error_info);
       errors.appendChild(message_container);
+
+      for (const key in json_representation.founded_objects) {
+        messages.appendChild(createLiElem(json_representation.founded_objects[key]));
+      }
+      
       return;
     }
-
-    for (const key in json_representation) {
-      messages.appendChild(createLiElem(json_representation[key]));
-    }
-    messages.appendChild(message);
-  };
-  ws.onerror = function (event) {
-    window.preventDefault();
-    console.log(event);
-  };
-  ws.onclose = function (event) {
-    window.preventDefault();
-    console.log(event);
-  };
-  ws.onopen = function (event) {
-    console.log("start");
-    flag = true;
-  };
-}
-
-let start = Connect(1);
-
-function sendMessage(event) {
-  try {
-    event.preventDefault();
-    let input = document.getElementById("messageText");
-    if (flag && input.value.length !== 0) {
-      ws.send(input.value);
-    }
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
+    return;
   }
 }
