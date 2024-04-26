@@ -10,6 +10,8 @@ from src.models import Storage
 from src.server_src.server.warehouse.schemas import ProductUpdate
 from src.server_src.server.warehouse.schemas import StorageUpdate
 
+from sqlalchemy import select
+
 async def get_product_via_id(
     product_id: int,
     session: AsyncSession
@@ -43,6 +45,20 @@ async def update_product_partial(
     return product
 
 
+async def get_all_products(session):
+    request = select(Product)
+
+    response = await session.execute(request)
+
+    return response.scalars().all()
+
+
+async def get_all_storage(session) -> list[Storage]:
+    request = select(Storage)
+
+    response = await session.execute(request)
+
+    return response.scalars().all() 
 
 async def get_storage_via_id(
     id_: int,
