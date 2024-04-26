@@ -11,7 +11,7 @@ class ProductBase(BaseModel):
 class ProductStorageBase(BaseModel):
     address: str
     max_weight: int
-    id: int
+    id: int = -1
 
 class Storage(ProductStorageBase):
     pass
