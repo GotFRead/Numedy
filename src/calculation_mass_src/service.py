@@ -9,6 +9,8 @@ from helpers.database_helper import get_product_via_id
 from helpers.database_helper import update_product_partial
 from helpers.database_helper import get_storage_via_id
 from helpers.database_helper import get_storage
+from helpers.database_helper import get_all_products
+from helpers.database_helper import get_all_storage
 from helpers.database_helper import update_product_partial
 from helpers.string_prepare import clean_string
 
@@ -24,6 +26,8 @@ from sqlalchemy import select
 
 import traceback
 
+
+DEFAULT_ID = -1
 
 class Service(BaseService):
     def __init__(self) -> None:
@@ -75,6 +79,12 @@ class Service(BaseService):
                 'curr_weight': storage.curr_weight - product.weight,
             }
         )
+    
+    async def get_next_item_id(self, list_items: list):
+        if len(list_items) == 0:
+            return 1
+        list_ = [x.id for x in list_items]
+        return max(list_) + 1
 
     async def add_product(self, request: dict):
         error = ""
@@ -82,15 +92,18 @@ class Service(BaseService):
         result = dict()
         try:
             session = self.db_connector.get_scoped_session()
+            
+            if request['message']['product_info']['id'] == DEFAULT_ID:
+                request['message']['product_info']['id'] = await self.get_next_item_id(
+                    await get_all_products(self.db_connector.get_scoped_session())
+                ) 
+
             product = Product(**request['message']['product_info'])
 
             await self.replace_product_in_storage(session, product)
 
             session.add(product)
             await session.commit()
-            
-            # await session.refresh() # ? Needed
-
             self.compile_product_result(result, product)
 
         except Exception as err:
@@ -210,6 +223,12 @@ class Service(BaseService):
         try:
             session = self.db_connector.get_scoped_session()
             request['message']['storage_info']['curr_weight'] = 0
+
+            if request['message']['product_info']['id'] == DEFAULT_ID:
+                request['message']['product_info']['id'] = await self.get_next_item_id(
+                    await get_all_storage(self.db_connector.get_scoped_session())
+                ) 
+
             storage: Storage = Storage(**request['message']['storage_info'])
             session.add(storage)
             await session.commit()
@@ -328,6 +347,8 @@ class Service(BaseService):
             status = True 
         return status
     
+
+    
     async def search_match(self, request: dict):
         error = ""
 
@@ -342,11 +363,7 @@ class Service(BaseService):
         try:
             result['matches'] = list()
 
-            request = select(Product)
-
-            response = await session.execute(request)
-
-            response = response.scalars().all()
+            response = await get_all_products(session)
 
             for res_obj in response:
                 if pattern in res_obj.name.lower():
@@ -384,11 +401,7 @@ class Service(BaseService):
         try:
             result['matches'] = list()
 
-            request = select(Storage)
-
-            response = await session.execute(request)
-
-            response = response.scalars().all()
+            response = await get_all_storage(session)
 
             for res_obj in response:
                 if pattern in res_obj.address.lower():
