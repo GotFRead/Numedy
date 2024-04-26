@@ -6,24 +6,23 @@
     </head>
     <body align="center">
         <div id="InputForm">
-            <h2 id="DeviceSearch">Поиск</h2>
+            <h2 id="DeviceSearch">Хранилища</h2>
             <form id="actionForm" onsubmit="on_submit(event)" >
-                <input type="text" id="messageText" autocomplete="off" placeholder="Наименование продукта"/>
+                <input type="text" id="storageMessageText" autocomplete="off" placeholder="Адрес хранилища"/>
                 <button id="add_product_button" onclick="on_add_product_button_click(event)" type="button">+</button>
-                <a href="/storage_page">-></a>
+                <a href="/"><-</a>
             </form>
 
             <div id='errors' align="center">
             </div>
         </div>
 
-        <dialog id="create-product">
-            <h4 id="title">Создать продукт</h4>
+        <dialog id="create-storage">
+            <h4 id="title">Создать хранилища</h4>
             <p id="info"></p>
             <div class="create-product__input-section">
-                <input type="text" id="productName" autocomplete="off" placeholder="Наименование продукта"/>
-                <input type="text" id="productWeight" autocomplete="off" placeholder="Вес продуктв"/>
-                <input type="text" id="productStorage" autocomplete="off" placeholder="Индекс хранилища"/>
+                <input type="text" id="storageAddress" autocomplete="off" placeholder="Адрес хранилища"/>
+                <input type="text" id="storageMaxWeight" autocomplete="off" placeholder="Максимальный вес"/>
                 <button id="create_button" onclick="on_create_button_click(event)" >Создать</button>
             </div>
         </dialog>
@@ -39,6 +38,6 @@
 
         <div id='messages' align="left">
         </div>
-        <script src="/js/index.js" data-embed="disable"> </script>
+        <script src="/js/storage_page.js" data-embed="disable"> </script>
     </body>
 </html>
