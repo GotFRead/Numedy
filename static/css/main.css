@@ -35,7 +35,7 @@ html {
     border-radius: 15px;
 }
 body {
-    background-image: url("/img/logo.png");
+    /* background-image: url("/img/logo.png"); */
     background-repeat: no-repeat;
     background-position:center;
     background-attachment:fixed;
@@ -53,8 +53,17 @@ dialog {
     position: fixed !important;
     top: 10% !important;
     backdrop-filter: blur(20px);
-    position: relative;
     background-color: aliceblue;
+}
+
+#create-product {
+    position: absolute !important;
+}
+
+.create-product__input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .mok_container {
@@ -108,7 +117,9 @@ dialog {
 }
 
 #cancel_button,
-#accept_button {
+#accept_button,
+#create_button,
+#add_product_button {
     border: 0;
     padding: 10px;
     border-radius: 10px;
@@ -117,7 +128,8 @@ dialog {
     cursor: pointer;
 }
 #cancel_button:hover,
-#accept_button:hover {
+#accept_button:hover,
+#create_button:hover {
     background-color: rgb(167, 213, 253);
     padding: 2%;
     margin: 0 2%;
