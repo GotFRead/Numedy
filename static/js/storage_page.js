@@ -1,18 +1,20 @@
 var client_id = Date.now();
 var uls = document.getElementById("messages");
-document.querySelector("#messageText").addEventListener("input", onInput);
+document
+  .querySelector("#storageMessageText")
+  .addEventListener("input", onStorageInput);
 let errors = document.getElementById("errors");
 const messages_for_errors_code = new Map([
   ["ERROR", "ERROR check your input"],
-  ["SUCCESS", "Your product was found!"],
+  ["SUCCESS", "Your storage was found!"],
 ]);
 
 let timeout;
 
-function onInput(event) {
+function onStorageInput(event) {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
-    get_product_by_name(event);
+    get_storage_by_address(event);
     uls.textContent = "";
     errors.textContent = "";
   }, 450);
@@ -43,7 +45,7 @@ function get_dialog_payload(string_) {
     return;
   }
 
-  payload["name"] = info[1].split("Товар: ")[1];
+  payload["name"] = info[1].split("Address: ")[1];
   payload["id"] = info[2].split("Id: ")[1].split("|")[0];
 
   return payload;
@@ -58,7 +60,7 @@ function clear_workspace() {
 
 async function on_delete_button_click(event) {
   const acceptDialog = document.querySelector("#accept");
-  await fetch(`/products`, {
+  await fetch(`/products/storage`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(get_dialog_payload(acceptDialog.textContent)),
@@ -92,7 +94,7 @@ function popup(event) {
     .querySelector("p")
     .textContent.split(" | ")[0];
 
-  title.textContent = `Товар: ${message_title.split("Name:")[1]}`;
+  title.textContent = `Адрес: ${message_title.split("Address:")[1]}`;
   let old_info = dialog.querySelector("#info");
   old_info.innerHTML = `Подробности: ${message_payload} | ${
     message_title.split("Name:")[0]
@@ -105,42 +107,40 @@ function createLiElem(item) {
   message_container.className = "message";
   message_container.onclick = popup;
   let product_info = document.createElement("h4");
-  product_info.textContent = `Id: ${item.id} | Name: ${item.name}`;
+  product_info.textContent = `Id: ${item.id} | Address: ${item.address}`;
 
   let description = document.createElement("p");
-  description.textContent = `storage: ${item.storage} | weight: ${item.weight}`;
+  description.textContent = `max weight: ${item.max_weight} | current weight: ${item.curr_weight}`;
   message_container.appendChild(product_info);
   message_container.appendChild(description);
   return message_container;
 }
 
 function on_add_product_button_click(event) {
-  const dialog = document.querySelector("#create-product");
+  const dialog = document.querySelector("#create-storage");
   dialog.setAttribute("open", "true");
 }
 
-function product_info_builder(event) {
+function storage_info_builder(event) {
   let payload = {};
 
-  let product_name = document.getElementById("productName");
-  let product_weight = document.getElementById("productWeight");
-  let product_storage = document.getElementById("productStorage");
+  let product_name = document.getElementById("storageAddress");
+  let product_weight = document.getElementById("storageMaxWeight");
 
-  payload["name"] = product_name.value;
-  payload["weight"] = product_weight.value;
-  payload["storage"] = product_storage.value;
+  payload["address"] = product_name.value;
+  payload["max_weight"] = product_weight.value;
 
   return payload;
 }
 
 async function on_create_button_click(event) {
-  await fetch(`/products`, {
+  await fetch(`/products/storage/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(product_info_builder(event)),
+    body: JSON.stringify(storage_info_builder(event)),
     timeout: 1000,
   });
-  const dialog = document.querySelector("#create-product");
+  const dialog = document.querySelector("#create-storage");
   dialog.close();
   clear_workspace();
 }
@@ -154,6 +154,15 @@ async function get_product_by_name(event) {
   await result_product_representation(await response.json());
 }
 
+async function get_storage_by_address(event) {
+  let request = document.getElementById("storageMessageText");
+  let response = await fetch(`/products/search_storage/${request.value}`, {
+    timeout: 1000,
+  });
+
+  await result_storage_representation(await response.json());
+}
+
 async function get_all(event) {
   let response = await fetch(`/products/${client_id}`, {
     timeout: 1000,
@@ -161,6 +170,39 @@ async function get_all(event) {
   payload = JSON.parse(await response.json());
 
   await result_product_representation(payload);
+}
+
+async function result_storage_representation(payload) {
+  try {
+    var messages = document.getElementById("messages");
+    var json_representation = payload;
+
+    if (
+      typeof json_representation == "object" &&
+      messages_for_errors_code.has(json_representation.status)
+    ) {
+      let message_container = document.createElement("p");
+      let error_info = document.createElement("h4");
+      error_info.textContent = messages_for_errors_code.get(
+        json_representation.founded_objects.length !== 0
+          ? json_representation.status
+          : "ERROR"
+      );
+      message_container.appendChild(error_info);
+      errors.appendChild(message_container);
+
+      for (const key in json_representation.founded_objects) {
+        messages.appendChild(
+          createLiElem(json_representation.founded_objects[key])
+        );
+      }
+
+      return;
+    }
+  } catch (error) {
+    console.log(error);
+    return;
+  }
 }
 
 async function result_product_representation(payload) {

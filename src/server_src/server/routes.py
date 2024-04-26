@@ -33,3 +33,7 @@ async def get_static(item: str):
 @router.get("/")
 async def get(request: Request):
     return get_static_file('pages', 'index.html')
+
+@router.get("/storage_page")
+async def get(request: Request):
+    return get_static_file('pages', 'storage_page.html')
