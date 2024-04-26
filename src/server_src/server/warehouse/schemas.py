@@ -34,7 +34,7 @@ class ProductUpdate(ProductCreate):
 
 class Product(ProductBase):
     model_config = ConfigDict(from_attributes=True)
-    id: int
+    id: int = -1
 
 
 class ProductUpdatePartial(ProductCreate):
@@ -54,7 +54,7 @@ class Response(BaseModel):
 
 
 class AddProductResponse(BaseModel):
-    id: int
+    id: int = -1
     storage: int
     name: str
     weight: int
