@@ -3,7 +3,7 @@ var uls = document.getElementById("messages");
 document.querySelector("#messageText").addEventListener("input", onInput);
 let errors = document.getElementById("errors");
 const messages_for_errors_code = new Map([
-  ["ERROR", "Timeout ERROR check your input"],
+  ["ERROR", "ERROR check your input"],
   ["SUCCESS", "Your product was found!"],
 ]);
 
@@ -49,7 +49,7 @@ function get_dialog_payload(string_) {
   return payload;
 }
 
-function clear_workspace(){
+function clear_workspace() {
   const messages = document.querySelector("#messages");
   messages.textContent = "";
   const errors = document.querySelector("#errors");
@@ -65,7 +65,7 @@ async function on_delete_button_click(event) {
     timeout: 1000,
   });
   acceptDialog.close();
-  clear_workspace()
+  clear_workspace();
 }
 
 function on_selector_item_click(event) {
@@ -86,16 +86,17 @@ function popup(event) {
   const dialog = document.querySelector("#accept");
   let title = dialog.querySelector("#title");
   let event_content = get_message(event);
-  console.log(event.target)
   let message_title = event_content.querySelector("h4").textContent;
   let message_info = event_content.querySelector("p").textContent;
   let message_payload = event_content
     .querySelector("p")
     .textContent.split(" | ")[0];
 
-  title.textContent = `Товар: ${message_title.split('Name:')[1]}`;
+  title.textContent = `Товар: ${message_title.split("Name:")[1]}`;
   let old_info = dialog.querySelector("#info");
-  old_info.innerHTML = `Подробности: ${message_payload} | ${message_title.split('Name:')[0]} ${message_info}`;
+  old_info.innerHTML = `Подробности: ${message_payload} | ${
+    message_title.split("Name:")[0]
+  } ${message_info}`;
   dialog.setAttribute("open", "true");
 }
 
@@ -114,11 +115,11 @@ function createLiElem(item) {
 }
 
 function on_add_product_button_click(event) {
-    const dialog = document.querySelector("#create-product");
-    dialog.setAttribute("open", "true");
-  }
+  const dialog = document.querySelector("#create-product");
+  dialog.setAttribute("open", "true");
+}
 
-function product_info_builder(event){
+function product_info_builder(event) {
   let payload = {};
 
   let product_name = document.getElementById("productName");
@@ -129,7 +130,7 @@ function product_info_builder(event){
   payload["weight"] = product_weight.value;
   payload["storage"] = product_storage.value;
 
-  return payload
+  return payload;
 }
 
 async function on_create_button_click(event) {
@@ -141,7 +142,7 @@ async function on_create_button_click(event) {
   });
   const dialog = document.querySelector("#create-product");
   dialog.close();
-  clear_workspace()
+  clear_workspace();
 }
 
 async function get_product_by_name(event) {
@@ -174,15 +175,19 @@ async function result_product_representation(payload) {
       let message_container = document.createElement("p");
       let error_info = document.createElement("h4");
       error_info.textContent = messages_for_errors_code.get(
-        json_representation.status
+        json_representation.founded_objects.length !== 0
+          ? json_representation.status
+          : "ERROR"
       );
       message_container.appendChild(error_info);
       errors.appendChild(message_container);
 
       for (const key in json_representation.founded_objects) {
-        messages.appendChild(createLiElem(json_representation.founded_objects[key]));
+        messages.appendChild(
+          createLiElem(json_representation.founded_objects[key])
+        );
       }
-      
+
       return;
     }
   } catch (error) {
