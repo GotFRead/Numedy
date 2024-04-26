@@ -30,12 +30,13 @@ html {
     border-radius: 20px;
 }
 
-#messageText {
+#messageText,
+#storageMessageText {
     margin-bottom: 20px;
     border-radius: 15px;
 }
 body {
-    /* background-image: url("/img/logo.png"); */
+    background-image: url("/img/logo.png");
     background-repeat: no-repeat;
     background-position:center;
     background-attachment:fixed;
