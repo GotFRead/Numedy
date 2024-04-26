@@ -11,4 +11,4 @@ class Product(Base):
     __tablename__ = "products"
     name: Mapped[str]
     weight: Mapped[int]
-    storage: Mapped[int] = mapped_column(ForeignKey("storage.id")) 
+    storage: Mapped[int] = mapped_column(ForeignKey("storage.id", ondelete='CASCADE')) 

@@ -224,8 +224,8 @@ class Service(BaseService):
             session = self.db_connector.get_scoped_session()
             request['message']['storage_info']['curr_weight'] = 0
 
-            if request['message']['product_info']['id'] == DEFAULT_ID:
-                request['message']['product_info']['id'] = await self.get_next_item_id(
+            if request['message']['storage_info']['id'] == DEFAULT_ID:
+                request['message']['storage_info']['id'] = await self.get_next_item_id(
                     await get_all_storage(self.db_connector.get_scoped_session())
                 ) 
 
@@ -264,6 +264,8 @@ class Service(BaseService):
                 id_=request['message']['storage_info']['id']
             )
 
+            await self.delete_linked_element(session, storage.id)
+
             await session.delete(storage)
             await session.commit()
 
@@ -277,7 +279,7 @@ class Service(BaseService):
             status = StatusComplete.ERROR.value
             error = msg
 
-            self.compile_storage_result(result, request['message']['storage_info'])
+            self.compile_storage_result(result, storage)
 
         return WRResponse.remove_storage(
             result['id'],
@@ -287,6 +289,13 @@ class Service(BaseService):
             status,
             error,
         )
+    
+    async def delete_linked_element(self, session, id_: int):
+        all_products = await get_all_products(session)
+        for product in all_products:
+            if product.storage != id_:
+                continue
+            await session.delete(product)
     
     async def patch_storage__(self, session, curr_storage: Storage, patch_info: dict):
         if patch_info['max_weight'] < patch_info['curr_weight']:
@@ -331,6 +340,7 @@ class Service(BaseService):
 
         return WRResponse.patch_storage(
             result['id'],
+            
             result['address'],
             result['max_weight'],
             result['curr_weight'],
