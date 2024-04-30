@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  postgre:
+    image: postgres:15.1-bullseye
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: numedy_test_task
+    volumes:
+      - ./docker/pgdata:/var/lib/postgresql
+  
+  mosquitto:
+    image: eclipse-mosquitto:1.5.6
+    restart: always
+    ports:
+      - "1883:1883"
+    logging:
+      driver: none
+
+
+  server:
+    build: .
+    image: python:3.10.11-alpine3.18
+    restart: always
+    volumes:
+      - .:/srv/test_task
+
+    depends_on:
+      - mosquitto
+      - postgre
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - DB_HOST=postgre
+    #   - cwd="/srv/numedy_test_task"
