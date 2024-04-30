@@ -17,8 +17,8 @@ logger = create_logger('main.log')
 
 # path_to_start_needed_process
 pool_exec_files = {
-    "server": "./src/server_src/main.py", 
-    "calculation_mass": "./src/calculation_mass_src/main.py"
+    "server": "/src/server_src/main.py", 
+    "calculation_mass": "/src/calculation_mass_src/main.py"
 }
 
 async def main():
