@@ -1,7 +1,6 @@
 var client_id = Date.now();
 var uls = document.getElementById("messages");
 document.querySelector("#messageText").addEventListener("input", onInput);
-document.querySelector("#storageMessageText").addEventListener("input", onInput);
 let errors = document.getElementById("errors");
 const messages_for_errors_code = new Map([
   ["ERROR", "ERROR check your input"],
