@@ -88,6 +88,9 @@ class Service(BaseService):
 
     async def add_product(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
+        
         status = StatusComplete.SUCCESS.value
         result = dict()
         try:
@@ -114,6 +117,9 @@ class Service(BaseService):
 
             self.compile_product_result(result, request['message']['product_info'])
 
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
+
+
         return WRResponse.add_product(
             result['id'],
             result['name'],
@@ -125,6 +131,9 @@ class Service(BaseService):
 
     async def remove_product(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
+
         status = StatusComplete.SUCCESS.value
         result = dict()
         try:
@@ -148,6 +157,8 @@ class Service(BaseService):
             error = msg
 
             self.compile_product_result(result, request['message']['product_info'])
+
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
 
         return WRResponse.remove_product(
             result['id'],
@@ -174,6 +185,9 @@ class Service(BaseService):
 
     async def patch_product(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
+
         status = StatusComplete.SUCCESS.value
         result = dict()
         try:
@@ -205,6 +219,8 @@ class Service(BaseService):
             self.compile_product_result(result, request['message']['product_info'])
             error = msg
 
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
+
         return WRResponse.patch_product(
             result['id'],
             result['name'],
@@ -218,6 +234,9 @@ class Service(BaseService):
 
     async def add_storage(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
+
         status = StatusComplete.SUCCESS.value
         result = dict()
         try:
@@ -244,6 +263,8 @@ class Service(BaseService):
 
             self.compile_storage_result(result, request['message']['storage_info'])
 
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
+
         return WRResponse.add_storage(
             result['id'],
             result['address'],
@@ -255,6 +276,9 @@ class Service(BaseService):
 
     async def remove_storage(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
+
         status = StatusComplete.SUCCESS.value
         result = dict()
         try:
@@ -280,6 +304,8 @@ class Service(BaseService):
             error = msg
 
             self.compile_storage_result(result, storage)
+
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
 
         return WRResponse.remove_storage(
             result['id'],
@@ -311,6 +337,9 @@ class Service(BaseService):
 
     async def patch_storage(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
+    
         status = StatusComplete.SUCCESS.value
         result = dict()
         try:
@@ -338,6 +367,8 @@ class Service(BaseService):
 
             error = msg
 
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
+
         return WRResponse.patch_storage(
             result['id'],
             
@@ -361,6 +392,8 @@ class Service(BaseService):
     
     async def search_match(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
 
         pattern = clean_string(request['message']['product_info']['pattern']).lower()
 
@@ -391,6 +424,8 @@ class Service(BaseService):
             error = msg
             status = StatusComplete.ERROR.value
 
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
+
         return WRResponse.search_product(
             result['matches'],
             status,
@@ -399,6 +434,8 @@ class Service(BaseService):
     
     async def search_storage(self, request: dict):
         error = ""
+
+        self.logger.info(f"Start complete - {request}")
 
         pattern = clean_string(request['message']['product_info']['pattern']).lower()
 
@@ -428,6 +465,8 @@ class Service(BaseService):
             result['matches'] = list()
             error = msg
             status = StatusComplete.ERROR.value
+
+        self.logger.info(f"Command complete - {result}, status - {status}, error - {error}")
 
         return WRResponse.search_storage(
             result['matches'],
